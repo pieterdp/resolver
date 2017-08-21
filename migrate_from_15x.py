@@ -58,6 +58,7 @@ def main():
         return 2
     else:
         print('[ok]')
+    return 0
 
 
 if __name__ == '__main__':
