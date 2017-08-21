@@ -1,9 +1,16 @@
 from resolver import app
 from resolver.database import db
 from passlib.context import CryptContext
+from hashlib import sha256
 from flask.ext.login import make_secure_token
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha512", "sha512_crypt", "bcrypt"], default="pbkdf2_sha512")
+
+
+def bw_hash_password(password):
+    m = sha256()
+    m.update(app.config['SALT'] + password)
+    return m.hexdigest()
 
 
 def hash_password(password):
@@ -23,7 +30,13 @@ class User(db.Model):
         self.auth_token = pwd_context.encrypt('{0}{1}'.format(username, app.config['SECRET_KEY']))
 
     def verify_password(self, password):
-        return pwd_context.verify(password, self.password)
+        ##
+        # BACKWARD COMPATIBILITY WITH OLDER HASH ALGORITHM
+        cur_check = pwd_context.verify(password, self.password)
+        if cur_check:
+            return cur_check
+        else:
+            return self.password == bw_hash_password(password)
 
     def change_password(self, password):
         self.password = hash_password(password)
