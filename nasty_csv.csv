@@ -1,0 +1,9 @@
+PID,entity type,title,document type,URL,enabled,notes,format,reference,order
+A_Normal_PID_002,work,,data,,1,,html,,
+A_Normal_PID_002,work,,representation,,1,,,1,1
+A123 X 509,work,,data,,1,,html,,
+A123 X 509,work,,representation,,1,,,1,1
+A Very long String that has been designed to go above the sixty-for character limit defined for ID\'s and thus will kill legacy.,work,,data,,1,,html,,
+A Very long String that has been designed to go above the sixty-for character limit defined for ID\'s and thus will kill legacy.,work,,representation,,1,,,1,1
+à ñàßty $trìng fułł,work,,data,,1,,html,,
+à ñàßty $trìng fułł,work,,representation,,1,,,1,1

@@ -1,10 +1,11 @@
 # -*- coding: utf-8-unix -*-
 import csv, codecs, cStringIO, re
-from unidecode import unidecode
 from flask import session, has_request_context
 from resolver import app
 from resolver.database import db
 from resolver.model import Log, ImportLog
+from resolver.modules.pid.generator import PidGenerator
+
 
 def log(entity, action):
     username = session.get('username') if has_request_context() else "_command_line_"
@@ -14,7 +15,7 @@ def log(entity, action):
     db.session.commit()
 
 
-def import_log (import_id, action):
+def import_log(import_id, action):
     """
     Function to create a log of the import actions
     :param import_id id of the import
@@ -22,36 +23,23 @@ def import_log (import_id, action):
     """
     username = session.get('username') if has_request_context() else "_command_line_"
     l = ImportLog(import_id, username, action)
-    app.logger.info (l)
-    db.session.add (l)
-    db.session.commit ()
-
-_clean_re = re.compile(r'[\t !"#$%&\'()*/<=>?@\[\\\]^`{|}]+')
+    app.logger.info(l)
+    db.session.add(l)
+    db.session.commit()
 
 
+##
+# Generates the PIDs
+##
 def cleanID(ID):
-    patterns = [
-        # Exceptions
-        ('- ','-'),(' -','-'),('\)+$',''),('\]+$', ''),('\°+$', ''),
-        # Simple replacements
-        ('\.','_'),(' ','_'),('\(','_'),('\)','_'),('\[','_'),('\]','_'),
-        ('\/','_'),('\?','_'),(',','_'),('&','_'),('\+','_'),('°','_'),
-        # Replace 1 or more underscores by a single underscore
-        ('_+', '_')]
-    partial = reduce(lambda str, t: re.sub(t[0], t[1], str),
-                     patterns,
-                     ID)
-    # For safety, let's give it another scrub.
-    result = []
-    for word in _clean_re.split(partial):
-        result.extend(unidecode(word).split())
+    return PidGenerator(ID).uuid()
 
-    return unicode(''.join(result))
 
 class UTF8Recoder:
     """
     Iterator that reads an encoded stream and reencodes the input to UTF-8
     """
+
     def __init__(self, f, encoding):
         self.reader = codecs.getreader(encoding)(f)
 
@@ -60,6 +48,7 @@ class UTF8Recoder:
 
     def next(self):
         return self.reader.next().encode("utf-8")
+
 
 class UnicodeReader:
     """
@@ -77,6 +66,7 @@ class UnicodeReader:
 
     def __iter__(self):
         return self
+
 
 class UnicodeWriter:
     """
